@@ -18,16 +18,19 @@ function App() {
   const filterByName = () => {
     filter.name && setCountries(countries.filter((item) => item.name.common.toLowerCase().includes(filter.name?.trim().toLowerCase())))
   }
+  const filterByPopulation = () => filter.population
+    && setCountries(countries.filter((item) => item.population < parseInt(filter.population, 10)))
 
   const handleChange = (e, key) => {
     setFilter({
       ...filter,
-      [key]: e.target.value === '' ? null : e.target.value,
+      [key]: e.target.value,
     })
   }
 
   const handleSubmit = () => {
     filterByName();
+    filterByPopulation();
   }
 
   return (
