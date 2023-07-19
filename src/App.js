@@ -21,16 +21,44 @@ function App() {
   const filterByPopulation = () => filter.population
     && setCountries(countries.filter((item) => item.population < parseInt(filter.population, 10)))
 
+  const sortFunction = () => {
+    if (filter.sort) {
+      const sorted = countries.sort((a, b) => {
+        const nameA = a.name?.common.toUpperCase();
+        const nameB = b.name?.common.toUpperCase();
+        if (nameA < nameB) {
+          if (filter.sort === 'ascend') {
+            return -1
+          }
+          if (filter.sort === 'descend') {
+            return 1
+          }
+        }
+        if (nameA > nameB) {
+          if (filter.sort === 'ascend') {
+            return 1
+          }
+          if (filter.sort === 'descend') {
+            return -1
+          }
+        }
+        return 0;
+      });
+      setCountries((prevState => [...prevState, sorted]))
+    }
+  }
+
   const handleChange = (e, key) => {
     setFilter({
       ...filter,
-      [key]: e.target.value,
+      [key]: e.target.value === '' ? null: e.target.value,
     })
   }
 
   const handleSubmit = () => {
     filterByName();
     filterByPopulation();
+    sortFunction();
   }
 
   return (
