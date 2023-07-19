@@ -15,12 +15,19 @@ function App() {
   useEffect(() => {
     getCountries();
   }, [])
+  const filterByName = () => {
+    filter.name && setCountries(countries.filter((item) => item.name.common.toLowerCase().includes(filter.name?.trim().toLowerCase())))
+  }
 
   const handleChange = (e, key) => {
     setFilter({
       ...filter,
       [key]: e.target.value === '' ? null : e.target.value,
     })
+  }
+
+  const handleSubmit = () => {
+    filterByName();
   }
 
   return (
@@ -42,7 +49,7 @@ function App() {
           Pagination:
           <input type="text" name="Pagination" />
         </label>
-        <button>Submit</button>
+        <button onClick={handleSubmit}>Submit</button>
       </div>
       <table className="table">
         <thead>
