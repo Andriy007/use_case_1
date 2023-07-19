@@ -26,12 +26,22 @@ function App() {
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
   const currentRecords = countries.slice(indexOfFirstRecord, indexOfLastRecord);
   const nPages = Math.ceil(countries.length / recordsPerPage)
+  const filterByName = (item) => filter.name ? item.name?.common.toLowerCase().includes(filter.name?.trim().toLowerCase()) : true
+  const filterByPopulation = (item) => filter.population ? item.population < parseInt(filter.population, 10) : true
 
-  const filterByName = () => {
-    filter.name && setCountries(countries.filter((item) => item.name.common.toLowerCase().includes(filter.name?.trim().toLowerCase())))
-  }
-  const filterByPopulation = () => filter.population
-    && setCountries(countries.filter((item) => item.population < parseInt(filter.population, 10)))
+  const filterMethods = [
+    (item => filterByName(item)),
+    (item => filterByPopulation(item)),
+  ]
+
+  const filteredArray = countries.filter((item) => {
+    for (let i = 0; i < filterMethods.length; i++) {
+      if (!filterMethods[i](item)) {
+        return false
+      }
+    }
+    return true
+  })
 
   const sortFunction = () => {
     if (filter.sort) {
@@ -73,10 +83,13 @@ function App() {
   }
 
   const handleSubmit = () => {
-    filterByName();
-    filterByPopulation();
-    sortFunction();
-    pagination();
+    if (!filter.name && !filter.population && !filter.sort && !filter.pagination) {
+      getCountries()
+    } else {
+      setCountries(filteredArray);
+      sortFunction();
+      pagination();
+    }
   }
 
   return (
@@ -105,7 +118,7 @@ function App() {
             type="text"
             pattern="[0-9]*"
             onChange={(e) => handleChange(e, 'pagination')}
-            name="Pagination"
+            name="pagination"
           />
         </label>
         <button onClick={handleSubmit}>Submit</button>
@@ -119,7 +132,7 @@ function App() {
         </thead>
         <tbody>
         {currentRecords.map(item => (
-          <tr>
+          <tr key={item.name?.common}>
             <td>{item.name?.common} </td>
             <td>{item.population} </td>
           </tr>
