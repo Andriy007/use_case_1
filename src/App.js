@@ -1,20 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
 import './App.css';
 import axios from "axios";
+import Pagination from './paginatiom';
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [filter, setFilter] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+
   const getCountries = useCallback(() => {
     axios.get('https://restcountries.com/v3.1/all')
       .then(({ data }) => {
-        setCountries(data)
+        setCountries(data);
+        setRecordsPerPage(data.length);
       })
       .catch((error) => console.log(error))
   }, [])
+
   useEffect(() => {
     getCountries();
   }, [])
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = countries.slice(indexOfFirstRecord, indexOfLastRecord);
+  const nPages = Math.ceil(countries.length / recordsPerPage)
+
   const filterByName = () => {
     filter.name && setCountries(countries.filter((item) => item.name.common.toLowerCase().includes(filter.name?.trim().toLowerCase())))
   }
@@ -47,6 +59,11 @@ function App() {
       setCountries((prevState => [...prevState, sorted]))
     }
   }
+  const pagination = () => {
+    if (filter.pagination) {
+      setRecordsPerPage(filter.pagination)
+    }
+  }
 
   const handleChange = (e, key) => {
     setFilter({
@@ -59,6 +76,7 @@ function App() {
     filterByName();
     filterByPopulation();
     sortFunction();
+    pagination();
   }
 
   return (
@@ -70,7 +88,12 @@ function App() {
         </label>
         <label>
           Filter by population:
-          <input type="text" pattern="[0-9]*" name="population" onChange={(e) => handleChange(e, 'population')}/>
+          <input
+            type="text"
+            pattern="[0-9]*"
+            name="population"
+            onChange={(e) => handleChange(e, 'population')}
+          />
         </label>
         <label>
           Sort:
@@ -78,7 +101,12 @@ function App() {
         </label>
         <label>
           Pagination:
-          <input type="text" name="Pagination" />
+          <input
+            type="text"
+            pattern="[0-9]*"
+            onChange={(e) => handleChange(e, 'pagination')}
+            name="Pagination"
+          />
         </label>
         <button onClick={handleSubmit}>Submit</button>
       </div>
@@ -90,7 +118,7 @@ function App() {
         </tr>
         </thead>
         <tbody>
-        {countries.map(item => (
+        {currentRecords.map(item => (
           <tr>
             <td>{item.name?.common} </td>
             <td>{item.population} </td>
@@ -98,6 +126,11 @@ function App() {
         ))}
         </tbody>
       </table>
+      <Pagination
+        nPages={nPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
     </div>
   );
 }
